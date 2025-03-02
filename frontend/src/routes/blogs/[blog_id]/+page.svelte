@@ -1,16 +1,36 @@
 <script lang="ts">
 	import SingleBlog from '$lib/components/Single_blog.svelte';
-	export let data: { blogData: any }; // Define the type of `data`
+	import { onMount } from 'svelte';
+	import { page } from '$app/state';
+	import api from '$lib/api/api';
+	import axios from 'axios';
+	import { error } from '@sveltejs/kit';
 
 	// Convert the data
-	let blogPost = JSON.parse(JSON.stringify(data.blogData)); // Convert the string back to JSON
+	let blogPost: { [key: string]: string } = $state({});
 
 	// Format created_at into a human-readable format
-	let formattedDate = new Date(blogPost.created_at).toLocaleDateString('en-US', {
-		weekday: 'long',
-		year: 'numeric',
-		month: 'long',
-		day: 'numeric'
+	let formattedDate = $state('');
+	onMount(async () => {
+		const { blog_id } = page.params;
+		try {
+			const response = await api.get(`http://localhost:8000/blogs/${blog_id}`);
+			blogPost = response.data;
+
+			formattedDate = new Date(blogPost.created_at).toLocaleDateString('en-US', {
+				weekday: 'long',
+				year: 'numeric',
+				month: 'long',
+				day: 'numeric'
+			});
+		} catch (err) {
+			if (axios.isAxiosError(err)) {
+				console.error('Error Status Code:', err.response?.status);
+			} else {
+				console.error('Error:', err);
+			}
+			window.location.pathname = '/blogs';
+		}
 	});
 </script>
 
@@ -21,7 +41,7 @@
 	content={blogPost.content}
 	id={blogPost.id}
 	date={formattedDate}
-	author={blogPost.author}
+	author={blogPost.author_id}
 	read_time={blogPost.read_time}
 	category={blogPost.category}
 />

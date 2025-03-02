@@ -4,6 +4,5 @@ from .configs import settings
 
 engine = create_engine(str( settings.SQLALCHEMY_DATABASE_URI))
 def init_db(session: Session) -> None:
-    pass
-   # SQLModel.metadata.create_all(engine)
+    SQLModel.metadata.create_all(engine)
 

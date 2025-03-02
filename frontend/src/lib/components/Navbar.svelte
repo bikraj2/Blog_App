@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import { get, writable } from 'svelte/store';
@@ -10,15 +10,21 @@
 		isOpen.update((v) => !v);
 	};
 
-	const navLinks = [
+	// Navigation links
+	let navLinks = [
 		{ href: '/', label: 'Home' },
-		{ href: '/features', label: 'Features' },
-		{ href: '/blogs', label: 'Blog' },
+		{ href: '/blogs', label: 'Blogs' },
 		{ href: '/login', label: 'Login' }
 	];
+	// Action links (like Logout)
+	const logout = () => {
+		console.log('User logged out');
+		localStorage.clear();
+	};
 
-	let activePath;
-	$: activePath = get(page).url.pathname;
+	let actionLinks = [{ label: 'Logout', action: logout }];
+
+	let activePath = page.url.pathname;
 </script>
 
 <header class="sticky top-0 z-50 border-b border-gray-100 bg-white/80 shadow-sm backdrop-blur-md">
@@ -30,7 +36,7 @@
 					<span
 						class="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent"
 					>
-						Brand
+						Fast Blog
 					</span>
 				</a>
 			</div>
@@ -51,11 +57,15 @@
 					</a>
 				{/each}
 
-				<button
-					class="rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:opacity-90 hover:shadow-lg"
-				>
-					Get Started
-				</button>
+				<!-- Action Links (Logout) -->
+				{#each actionLinks as { label, action }}
+					<button
+						on:click={action}
+						class="rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-red-700"
+					>
+						{label}
+					</button>
+				{/each}
 			</div>
 
 			<!-- Mobile menu button -->
@@ -118,13 +128,16 @@
 						{label}
 					</a>
 				{/each}
-				<div class="pt-2">
+
+				<!-- Action Links (Logout) -->
+				{#each actionLinks as { label, action }}
 					<button
-						class="w-full rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:shadow-md"
+						on:click={action}
+						class="block w-full rounded-md bg-red-600 px-4 py-2 text-base font-medium text-white transition-all duration-200 hover:bg-red-700"
 					>
-						Get Started
+						{label}
 					</button>
-				</div>
+				{/each}
 			</div>
 		</div>
 	{/if}

@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import api from '$lib/api/api.js';
 	import { error } from '@sveltejs/kit';
 	import axios, { AxiosError, type AxiosPromise } from 'axios';
+	import { onMount } from 'svelte';
 	let { data } = $props();
 	let countErrors: number = $state(0);
 	let errors: { [key: string]: any } = $state({
@@ -9,14 +11,38 @@
 		content: '',
 		category: ''
 	});
-
-	let title: string = $state(data.blogData.title);
-	let content: string = $state(data.blogData.content);
-	let readTime: string = $state(data.blogData.read_time);
-	let category: string = $state(data.blogData.category);
-	let version: string = $state(data.blogData.version);
-	let id: string = $state(data.blogData.id);
+	let title: string = $state('');
+	let content: string = $state('');
+	let readTime: string = $state('');
+	let category: string = $state('');
+	let version: string = $state('');
+	let id: string = $state('');
 	let server_error: string = $state('');
+
+	let blog_id = page.params.blog_id;
+	onMount(async () => {
+		try {
+			const response = await api.get(`http://localhost:8000/blogs/${blog_id}`);
+			let data = response.data;
+			title = data.title;
+			id = data.id;
+			content = data.content;
+			readTime = data.read_time;
+			category = data.category;
+			version = data.version;
+			//if (user.id != data.author_id) {
+			//	window.location.pathname = '/blogs';
+			//}
+		} catch (err) {
+			if (axios.isAxiosError(err)) {
+				console.error('Error Status Code:', err.response?.status);
+			} else {
+				console.error('Error:', err);
+			}
+
+			throw error(500, `Unable to fetch blog data for blog ID: ${blog_id}.`);
+		}
+	});
 	// Assuming you already have the blog ID from the URL or passed as a prop
 	let categories = ['Tech', 'Education', 'Business', 'Lifestyle', 'Entertainment'];
 
@@ -70,7 +96,7 @@
 
 		// If validation passes, make the PUT request to update the blog
 		try {
-			const response = await axios.patch(`http://localhost:8000/blogs/${id}`, data);
+			const response = await api.patch(`http://localhost:8000/blogs/${id}`, data);
 
 			// Handle success response
 			const blog = response.data;

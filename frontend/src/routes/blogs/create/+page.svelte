@@ -1,4 +1,5 @@
 <script lang="ts">
+	import api from '$lib/api/api';
 	import axios from 'axios';
 	let title: string = $state('');
 	let content: string = $state('');
@@ -64,7 +65,7 @@
 		}
 
 		try {
-			const response = await axios.post('http://localhost:8000/blogs', data);
+			const response = await api.post('http://localhost:8000/blogs', data);
 
 			// Handle success response
 			const blog = response.data;

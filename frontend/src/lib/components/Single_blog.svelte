@@ -1,6 +1,8 @@
 <script lang="ts">
 	import axios from 'axios';
 	import Confirm from './Confirm.svelte';
+	import api from '$lib/api/api';
+	import { onMount } from 'svelte';
 	// Define the prop types
 	export let title: string = '';
 	export let id: string = '';
@@ -12,19 +14,31 @@
 
 	export let isModalOpen = false;
 	// Function to navigate to the Edit page
-	const navigateToEdit = () => {
-		console.log('her');
+	let hasPermissions = false;
+	let userData;
+	const navigateToEdit = async () => {
 		window.location.href = `/blogs/update/${id}`;
 	};
+	onMount(async () => {
+		try {
+			const user_info = await api.get('http://localhost:8000/users/');
+			userData = user_info.data;
+			console.log(userData);
+			console.log(author);
+			hasPermissions = userData.id == author;
+		} catch (err) {}
+	});
+
 	const deleteBlog = async () => {
 		// Logic for deleting the blog (for example, making an API call)
 		try {
-			const response = await axios.delete(`http://localhost:8000/blogs/${id}`);
+			const response = await api.delete(`http://localhost:8000/blogs/${id}`);
 			// Handle success response
 
 			console.log('Blog deleted:', response.data);
 			// Optionally redirect after deleting
 			// navigate to another page or show a success message
+			window.location.pathname = '/blogs';
 		} catch (error) {
 			console.error('Error deleting blog:', error);
 		}
@@ -67,23 +81,25 @@
 			<div class="prose lg:prose-lg max-w-none px-6 py-8">
 				{@html content}
 				<!-- Edit Button -->
-				<div class="mt-6 flex justify-between">
-					<!-- Delete Button -->
-					<button
-						class="inline-flex items-center rounded-lg bg-red-600 px-6 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-red-700"
-						onclick={() => (isModalOpen = true)}
-					>
-						<span>Delete</span>
-					</button>
+				{#if hasPermissions}
+					<div class="mt-6 flex justify-between">
+						<!-- Delete Button -->
+						<button
+							class="inline-flex items-center rounded-lg bg-red-600 px-6 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-red-700"
+							onclick={() => (isModalOpen = true)}
+						>
+							<span>Delete</span>
+						</button>
 
-					<!-- Edit Button -->
-					<button
-						class="inline-flex items-center rounded-lg bg-indigo-600 px-6 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-indigo-700"
-						onclick={navigateToEdit}
-					>
-						<span>Edit</span>
-					</button>
-				</div>
+						<!-- Edit Button -->
+						<button
+							class="inline-flex items-center rounded-lg bg-indigo-600 px-6 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-indigo-700"
+							onclick={navigateToEdit}
+						>
+							<span>Edit</span>
+						</button>
+					</div>
+				{/if}
 			</div>
 		</article>
 		<Confirm

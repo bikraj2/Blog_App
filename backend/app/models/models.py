@@ -34,6 +34,9 @@ class Blog(BlogBase, table=True):
     id: int | None  = Field(default = None,primary_key=True)
     created_at: datetime = Field(default_factory=datetime.now)
     version: int = Field(default=1)
+
+
+
     category: CategoryEnum | None = None  # category can now be updated with one of the enum values
     author_id: int = Field(foreign_key="user.id")
     # Override the model save method to clean content before saving
@@ -48,7 +51,9 @@ class BlogPublic(BlogBase):
     created_at: datetime = Field(default_factory=datetime.now)
     version: int = Field(default=1)
 class BlogCreate(BlogBase):
+    author_id: str |None = None
     pass
+
 
 class BlogUpdate(BlogBase):
     title: str | None = None

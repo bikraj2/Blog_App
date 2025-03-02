@@ -2,46 +2,45 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import api from '$lib/api/api';
+	// Declare the prop and initialize it
+	let data = $props();
 
-	// Reactive state variables
-	let blogsData = $state<any[]>([]);
-	let currentPage = $state(1);
-	let totalPages = $state(1);
-	let limit = $state(9); // Number of blogs per page
+	let offset = $state(0); // Start from 0 to align with typical API conventions
+	let limit = $state(10);
 	let isLoading = $state(false);
+	let allBlogsLoaded = $state(false);
 
-	// Fetch paginated blogs
-	async function fetchBlogs(pageNumber: number) {
+	let blogsData = $state<any[]>([]);
+	onMount(async () => {
+		offset = Number(page.params.offset) || 1;
+		limit = Number(page.params.limit) || 10;
+		// Fetch the paginated data from your database or API (adjust as needed)
+		const response = await api.get(`http://localhost:8000/blogs?offset=${offset}&limit=${limit}`);
+		blogsData = response.data;
+	});
+
+	async function loadMore() {
+		if (isLoading || allBlogsLoaded) return;
+
 		isLoading = true;
-		try {
-			const offset = (pageNumber - 1) * limit;
-			const response = await api.get(`http://localhost:8000/blogs?offset=${offset}&limit=${limit}`);
 
-			// Get total count from headers
-			console.log(response.data);
-			const totalCount = Number(response.data.total_count || 0);
-			totalPages = Math.ceil(totalCount / limit);
-			blogsData = response.data.data;
-			console.log(blogsData);
-			currentPage = pageNumber;
+		try {
+			const response = await fetch(
+				`http://localhost:8000/blogs?offset=${offset + limit}&limit=${limit}`
+			);
+			const newBlogs = await response.json();
+			if (newBlogs.length === 0) {
+				allBlogsLoaded = true;
+			} else {
+				blogsData = [...blogsData, ...newBlogs];
+				offset += limit;
+			}
 		} catch (error) {
-			console.error('Error fetching blogs:', error);
+			console.error('Error loading more blogs:', error);
 		} finally {
 			isLoading = false;
 		}
 	}
-
-	// Navigate to a specific page
-	function goToPage(pageNumber: number) {
-		if (pageNumber >= 1 && pageNumber <= totalPages) {
-			fetchBlogs(pageNumber);
-		}
-	}
-
-	// Fetch blogs on mount
-	onMount(() => {
-		fetchBlogs(currentPage);
-	});
 </script>
 
 <div class="min-h-screen bg-gray-50">
@@ -109,36 +108,17 @@
 		</div>
 
 		<!-- Load More Button -->
-
-		<div class="mt-8 flex justify-center space-x-2">
-			<!-- Previous Button -->
-			<button
-				class="rounded-lg bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 disabled:opacity-50"
-				onclick={() => goToPage(currentPage - 1)}
-				disabled={currentPage === 1}
-			>
-				Previous
-			</button>
-
-			<!-- Page Numbers -->
-			{#each Array(totalPages) as _, index}
-				<button
-					class="rounded-lg px-4 py-2 font-semibold text-white
-				{currentPage === index + 1 ? 'bg-indigo-600' : 'bg-gray-500 hover:bg-gray-700'}"
-					onclick={() => goToPage(index + 1)}
-					disabled={currentPage === index + 1}
-				>
-					{index + 1}
-				</button>
-			{/each}
-
-			<!-- Next Button -->
+		<div class="mt-8 flex justify-center">
 			<button
 				class="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 disabled:opacity-50"
-				onclick={() => goToPage(currentPage + 1)}
-				disabled={currentPage === totalPages}
+				onclick={loadMore}
+				disabled={isLoading || allBlogsLoaded}
 			>
-				Next
+				{#if isLoading}
+					Loading...
+				{:else}
+					Load More
+				{/if}
 			</button>
 		</div>
 	</main>

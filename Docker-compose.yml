@@ -37,5 +37,15 @@ services:
     env_file:
       - .env
 
+  web_frontend:
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+    container_name: web_frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - web-api # Ensure backend is running before frontend
+    command: [ "npm", "run", "dev", "--", "--host" ]
 volumes:
   pg_data:

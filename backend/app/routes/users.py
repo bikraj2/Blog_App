@@ -27,8 +27,6 @@ def register_user(user_data: UserCreate, db: SessionDep):
     existing_user = get_user_email(db, user_data.email)
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already exists")
-
-
     hashed_password = get_password_hash(user_data.password)
     new_user = User(username=user_data.username, email=user_data.email, full_name=user_data.full_name, hashed_password=hashed_password)
     db.add(new_user)
@@ -54,4 +52,9 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
 
     return Token(access_token=access_token, token_type="bearer")
 
-
+@router.get("",response_model=UserPublic)
+async def read_users_me(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+):
+    public_user= UserPublic(id=current_user.id,username=current_user.username,email=current_user.email)
+    return public_user 
