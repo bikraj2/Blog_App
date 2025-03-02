@@ -97,6 +97,7 @@
 			{/if}
 		</div>
 
+		<a href="/register"> Register</a>
 		<!-- Submit Button -->
 		<button
 			type="submit"

@@ -11,6 +11,7 @@ from .routes import users,blogs
 async def lifespan(app: FastAPI):
     init_db(SessionDep)
     yield
+
 app = FastAPI(lifespan=lifespan)
 
 

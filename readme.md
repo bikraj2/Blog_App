@@ -188,7 +188,9 @@ SELECT * FROM blogs;
 | `PATCH` | `/blogs/{id}`    | Update a blog       | Yes |
 | `DELETE`| `/blogs/{id}`    | Delete a blog       | Yes |
 
+The Relation between schema is a simple one
 ---
+![Alt text](./assets/er.png)
 
 ## **Deployment**
 To deploy the app on a server:
