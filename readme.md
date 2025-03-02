@@ -2,6 +2,7 @@
 
 A full-stack blog application with **FastAPI** (Python) as the backend, **PostgreSQL** as the database, and **SvelteKit 5** as the frontend. The project is containerized using **Docker** and managed with **Docker Compose**.
 
+### Note: You can choose to use nginx as reverse proxy for serving the website and app over https but most browser will completely ingore the self-signed certificates. 
 ---
 
 ## **Prerequisites**
