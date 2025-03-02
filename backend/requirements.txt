@@ -1,0 +1,14 @@
+dotenv
+bleach
+faker
+alembic
+fastapi[all]==0.115.9
+fastapi-cli==0.0.7
+passlib==1.7.4
+pydantic-settings==2.8.1
+Pygments==2.19.1
+PyJWT==2.10.1
+python-dotenv==1.0.1
+python-multipart==0.0.20
+sqlmodel==0.0.23
+psycopg
